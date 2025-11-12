@@ -1,0 +1,8 @@
+datasets
+spacy
+pandas
+matplotlib
+seaborn
+tqdm
+numpy
+reportlab
