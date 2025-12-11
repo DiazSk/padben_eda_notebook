@@ -4,7 +4,7 @@ import json
 import time
 
 # --- CONFIGURATION ---
-API_KEY = "AIzaSyAqHLrvRTcNAQ88jHFt1oc-HGdaUdbzk8w"  # Replace with your Gemini API key (starts with AIza...)
+API_KEY = "Your_API_Key_Here"  # Replace with your Gemini API key (starts with AIza...)
 INPUT_FILE = "data.json"
 OUTPUT_FILE = "cumulative_dataset.json"
 BATCH_SIZE = 10  # Reduced batch size to stay within rate limits
