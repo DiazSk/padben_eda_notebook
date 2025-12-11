@@ -1,0 +1,248 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{enumitem}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={IMDB NER and POS Analysis Report},
+    pdfpagemode=FullScreen,
+}
+
+% Custom colors
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{lightgray}{RGB}{240,240,240}
+
+% Title information
+\title{\textbf{IMDB Movie Reviews:\\Comprehensive Named Entity Recognition and\\Part-of-Speech Distribution Analysis}}
+\author{NLP Analysis Report}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report analyzes Named Entity Recognition (NER) and Part-of-Speech (POS) distributions in 50,000 IMDB movie reviews to identify differences between positive and negative sentiments. The analysis reveals notable variations in entity usage and grammatical structures between sentiment classes.
+\end{abstract}
+
+\section{Introduction}
+
+This analysis examines whether systematic linguistic differences exist between positive and negative movie reviews through computational analysis of part-of-speech patterns and named entity distributions. The dataset comprises 50,000 IMDB movie reviews (25,000 positive, 25,000 negative), processed using spaCy's NLP pipeline for tokenization, POS tagging, and named entity recognition.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Dataset Summary Statistics}
+\label{tab:summary}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Negative Reviews} & \textbf{Positive Reviews} \\
+\midrule
+Documents & 25,000 & 25,000 \\
+Total Tokens & 5,665,558 & 5,752,715 \\
+Total Entities & 272,404 & 340,782 \\
+Unique POS Tags & 17 & 17 \\
+Unique Entity Types & 18 & 18 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:summary} presents the overall statistics of the corpus. Notably, positive reviews contain slightly more tokens per review on average (230.1 vs. 226.6), suggesting that satisfied viewers may provide more elaborate descriptions.
+
+\section{Part-of-Speech Distribution Analysis}
+
+The part-of-speech distribution reveals notable patterns in grammatical structure between sentiments. Both positive and negative reviews show similar overall distributions, with nouns, verbs, and determiners being most frequent. However, subtle differences emerge in specific categories that reflect distinct writing styles and emphases.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Top 10 Part-of-Speech Tag Distributions by Sentiment}
+\label{tab:pos}
+\begin{tabular}{lccc}
+\toprule
+\textbf{POS Tag} & \textbf{Negative (\%)} & \textbf{Positive (\%)} & \textbf{Difference} \\
+\midrule
+NOUN & 18.73 & 18.77 & +0.04\% \\
+VERB & 12.17 & 11.49 & -0.68\% \\
+DET & 11.12 & 11.01 & -0.11\% \\
+ADP & 10.40 & 10.94 & +0.55\% \\
+PRON & 10.45 & 10.17 & -0.28\% \\
+ADJ & 8.72 & 8.84 & +0.11\% \\
+ADV & 6.74 & 6.30 & -0.44\% \\
+PROPN & 5.60 & 7.33 & +1.74\% \\
+AUX & 6.54 & 5.97 & -0.58\% \\
+CCONJ & 3.78 & 4.10 & +0.32\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Key POS Findings}
+
+Table~\ref{tab:pos} illustrates the distribution of the ten most frequent part-of-speech tags across both sentiment categories. Several noteworthy patterns emerge:
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Proper Nouns (PROPN):} Significantly higher in positive reviews (7.33\% vs 5.60\%), indicating more frequent mentions of actors, directors, and film titles. This suggests that positive reviewers are more likely to credit specific individuals.
+
+\item \textbf{Verbs (VERB):} More prevalent in negative reviews (12.17\% vs 11.49\%), suggesting critics use more action-oriented language to describe specific flaws and problematic narrative elements.
+
+\item \textbf{Adjectives (ADJ):} Slightly elevated in positive reviews (8.84\% vs 8.72\%), reflecting descriptive praise of performances, cinematography, and overall production quality.
+
+\item \textbf{Interjections (INTJ):} Dramatically higher in negative reviews (0.30\% vs 0.16\%), showing emotional expressiveness and spontaneous reactions in critical feedback.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../figures/pos_tag_distribution.png}
+\caption{Comparative visualization of Part-of-Speech tag distributions across positive and negative movie reviews. The chart highlights the relative frequencies of grammatical categories, with notable differences in proper nouns and interjections.}
+\label{fig:pos}
+\end{figure}
+
+Figure~\ref{fig:pos} provides a visual representation of these distributional differences, making the contrasts between sentiment categories immediately apparent.
+
+\section{Named Entity Recognition Distribution Analysis}
+
+Named entity analysis reveals substantial differences in how positive and negative reviewers reference people, places, and other entities. Positive reviews demonstrate higher entity density overall, with particular emphasis on person names and organizational mentions.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Top 10 Named Entity Distributions by Sentiment}
+\label{tab:ner}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Entity Type} & \textbf{Negative (\%)} & \textbf{Positive (\%)} & \textbf{Difference} \\
+\midrule
+PERSON & 36.10 & 41.05 & +4.95\% \\
+ORG & 14.17 & 14.01 & -0.16\% \\
+CARDINAL & 13.43 & 10.04 & -3.39\% \\
+DATE & 7.44 & 8.36 & +0.92\% \\
+GPE & 7.10 & 8.00 & +0.90\% \\
+NORP & 5.64 & 5.43 & -0.21\% \\
+WORK\_OF\_ART & 4.45 & 4.18 & -0.26\% \\
+ORDINAL & 3.74 & 3.35 & -0.39\% \\
+TIME & 3.43 & 1.60 & -1.82\% \\
+LOC & 0.98 & 0.99 & +0.01\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Key NER Findings}
+
+Table~\ref{tab:ner} presents the distribution of the most frequent named entity types. The analysis reveals several compelling patterns:
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{PERSON Entities:} Substantially higher in positive reviews (41.05\% vs 36.10\%), demonstrating that satisfied viewers frequently name cast and crew members. This aligns with the increased usage of proper nouns observed in POS analysis.
+
+\item \textbf{CARDINAL Numbers:} More common in negative reviews (13.43\% vs 10.04\%), possibly indicating quantitative critiques of pacing, runtime, or specific sequences. Critics may use numerical references to support objective criticisms.
+
+\item \textbf{TIME Expressions:} Significantly elevated in negative reviews (3.43\% vs 1.60\%), suggesting critics reference specific durations or moments where films failed to engage. This temporal specificity may indicate attempts to pinpoint exact failings.
+
+\item \textbf{WORK\_OF\_ART:} Similar distribution across sentiments (4.45\% vs 4.18\%), showing both groups reference film titles, books, and artistic works being adapted or compared, indicating contextual awareness regardless of sentiment.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../figures/ner_label_distribution.png}
+\caption{Named Entity Recognition distribution comparison between positive and negative reviews. The visualization emphasizes the substantial difference in PERSON entity usage and the contrasting patterns in temporal expressions.}
+\label{fig:ner}
+\end{figure}
+
+Figure~\ref{fig:ner} illustrates these distributional patterns visually, with the pronounced difference in PERSON entities being particularly striking.
+
+\section{Statistical Insights and Comparative Metrics}
+
+Quantitative analysis of the distributions reveals several statistically significant patterns that distinguish positive from negative review writing styles. Table~\ref{tab:insights} summarizes the most notable differences and key metrics.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Key Statistical Insights}
+\label{tab:insights}
+\begin{tabular}{lc}
+\toprule
+\textbf{Statistical Insight} & \textbf{Value} \\
+\midrule
+Highest POS increase in Positive & PROPN (+1.74\%) \\
+Highest POS decrease in Positive & VERB (-0.68\%) \\
+Highest NER increase in Positive & PERSON (+4.95\%) \\
+Highest NER decrease in Positive & CARDINAL (-3.39\%) \\
+Entity Density -- Negative & 4.81\% \\
+Entity Density -- Positive & 5.92\% \\
+Entity Density Difference & +1.12\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The entity density metric is particularly revealing: positive reviews exhibit a 5.92\% entity density compared to 4.81\% in negative reviews, representing a 23\% relative increase. This substantial difference suggests that positive reviewers employ a more referential writing style, grounding their praise in concrete mentions of people, organizations, and specific works.
+
+\section{Discussion: Patterns, Trends, and Explanations}
+
+This analysis reveals clear linguistic patterns that differentiate positive and negative movie reviews.
+
+\subsection{Observed Patterns and Trends}
+
+\textbf{Positive Reviews:} Exhibit a more referential writing style, characterized by:
+\begin{itemize}[leftmargin=*]
+\item Higher entity density (5.92\% vs 4.81\%) -- a 23\% increase
+\item More frequent proper nouns (7.33\% vs 5.60\%) -- a 31\% increase
+\item Greater person entity mentions (41.05\% vs 36.10\%) -- a 14\% increase
+\item More coordinating conjunctions, suggesting listing of positive attributes
+\end{itemize}
+
+\textbf{Negative Reviews:} Display a more analytical and descriptive approach, featuring:
+\begin{itemize}[leftmargin=*]
+\item Higher verb usage (12.17\% vs 11.49\%), indicating action-oriented critique
+\item More temporal expressions (3.43\% vs 1.60\%), pinpointing specific problematic moments
+\item Elevated cardinal numbers (13.43\% vs 10.04\%), reflecting quantitative criticisms
+\item More interjections (0.30\% vs 0.16\%), showing emotional expressiveness
+\end{itemize}
+
+\subsection{Hypotheses and Explanations}
+
+Several hypotheses explain these observed patterns:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Attribution Hypothesis:} Positive reviewers credit specific individuals (actors, directors) for a film's success, while negative reviewers focus on abstract failures rather than blaming individuals. This explains the substantial increase in PERSON entities and proper nouns in positive reviews.
+
+\item \textbf{Specificity in Criticism:} Negative reviewers employ temporal and numerical precision to support their critiques objectively. References to specific durations, scenes, or quantifiable elements provide concrete evidence for negative assessments.
+
+\item \textbf{Descriptive vs. Analytical Language:} Satisfied viewers use descriptive language emphasizing what exists (nouns, adjectives) and who created it. Dissatisfied viewers use analytical language focusing on what happens (verbs) and when things go wrong (temporal expressions).
+
+\item \textbf{Emotional Expression:} The higher rate of interjections in negative reviews suggests that disappointment elicits more spontaneous emotional reactions than satisfaction, which manifests in more structured, referential praise.
+\end{enumerate}
+
+\section{Conclusion}
+
+This analysis of 50,000 IMDB movie reviews reveals notable differences in the distribution of named entities and parts of speech between positive and negative sentiments. 
+
+\textbf{Key Findings:}
+\begin{itemize}[leftmargin=*]
+\item Positive reviews show 31\% higher proper noun usage, 23\% greater entity density, and 14\% more person mentions, indicating a referential writing style that credits specific individuals.
+\item Negative reviews exhibit higher verb usage, more temporal expressions, and elevated cardinal numbers, reflecting an analytical approach with precise, quantitative critiques.
+\item These patterns suggest that sentiment is deeply embedded in grammatical structure and referencing behavior, not just evaluative vocabulary.
+\end{itemize}
+
+The observed trends demonstrate systematic linguistic differences in how movie reviewers express satisfaction versus dissatisfaction, with positive reviews emphasizing who created valued elements and negative reviews focusing on what went wrong and when.
+
+\end{document}

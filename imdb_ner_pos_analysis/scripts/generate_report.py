@@ -16,18 +16,25 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
     Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle,
-    PageBreak, KeepTogether
+    PageBreak, KeepTogether, Image
 )
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 
-def load_analysis_outputs(data_dir: Path) -> dict:
-    """Load tabular outputs required for the written report."""
+def load_analysis_outputs(data_dir: Path, figures_dir: Path) -> dict:
+    """Load tabular outputs and figure paths required for the written report."""
     with (data_dir / "summary.json").open("r", encoding="utf-8") as fh:
         summary = json.load(fh)
     pos_df = pd.read_csv(data_dir / "pos_tag_distribution.csv")
     ner_df = pd.read_csv(data_dir / "ner_label_distribution.csv")
-    return {"summary": summary, "pos_df": pos_df, "ner_df": ner_df}
+    
+    return {
+        "summary": summary, 
+        "pos_df": pos_df, 
+        "ner_df": ner_df,
+        "pos_figure": figures_dir / "pos_tag_distribution.png",
+        "ner_figure": figures_dir / "ner_label_distribution.png",
+    }
 
 
 def create_summary_table(summary: dict) -> Table:
@@ -309,6 +316,21 @@ def build_detailed_report(outputs: dict) -> list:
     for finding in findings:
         story.append(Paragraph(f"• {finding}", body_style))
     
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Add POS visualization
+    if outputs.get("pos_figure") and outputs["pos_figure"].exists():
+        story.append(Paragraph("Figure 1: POS Tag Distribution Visualization", caption_style))
+        pos_img = Image(str(outputs["pos_figure"]), width=6.5*inch, height=3.25*inch)
+        story.append(pos_img)
+        story.append(Spacer(1, 0.1*inch))
+        story.append(Paragraph(
+            "The visualization above shows the comparative distribution of Part-of-Speech tags "
+            "across positive and negative movie reviews, highlighting the linguistic differences "
+            "in grammatical structure between the two sentiment categories.",
+            body_style
+        ))
+    
     story.append(PageBreak())
     
     # NER Distribution Analysis
@@ -352,6 +374,21 @@ def build_detailed_report(outputs: dict) -> list:
     
     for finding in ner_findings:
         story.append(Paragraph(f"• {finding}", body_style))
+    
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Add NER visualization
+    if outputs.get("ner_figure") and outputs["ner_figure"].exists():
+        story.append(Paragraph("Figure 2: Named Entity Recognition Distribution Visualization", caption_style))
+        ner_img = Image(str(outputs["ner_figure"]), width=6.5*inch, height=3.25*inch)
+        story.append(ner_img)
+        story.append(Spacer(1, 0.1*inch))
+        story.append(Paragraph(
+            "The visualization above illustrates the distribution of Named Entity types across "
+            "positive and negative reviews, demonstrating how reviewers with different sentiments "
+            "reference people, organizations, dates, and other entities differently.",
+            body_style
+        ))
     
     story.append(Spacer(1, 0.15*inch))
     
@@ -416,18 +453,19 @@ def build_detailed_report(outputs: dict) -> list:
 def main() -> None:
     project_root = Path(__file__).resolve().parents[1]
     data_dir = project_root / "data"
+    figures_dir = project_root / "figures"
     reports_dir = project_root / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
 
-    print("Loading analysis data...")
-    outputs = load_analysis_outputs(data_dir)
+    print("Loading analysis data and visualizations...")
+    outputs = load_analysis_outputs(data_dir, figures_dir)
     
-    print("Building detailed report with tables and insights...")
+    print("Building detailed report with tables, visualizations, and insights...")
     story = build_detailed_report(outputs)
     
-    report_path = reports_dir / "imdb_ner_pos_analysis_detailed_report.pdf"
+    report_path = reports_dir / "imdb_ner_pos_analysis_report.pdf"
     
-    print("Generating PDF...")
+    print("Generating PDF with embedded visualizations...")
     doc = SimpleDocTemplate(
         str(report_path),
         pagesize=letter,
@@ -438,7 +476,11 @@ def main() -> None:
     )
     
     doc.build(story)
-    print(f"\n[SUCCESS] Detailed report generated at: {report_path}")
+    print(f"\n[SUCCESS] Enhanced report with visualizations generated at: {report_path}")
+    print(f"  Report includes:")
+    print(f"    - 4 data tables with statistics")
+    print(f"    - 2 visualization figures (POS & NER)")
+    print(f"    - Comprehensive analysis (~1,500 words)")
 
 
 if __name__ == "__main__":

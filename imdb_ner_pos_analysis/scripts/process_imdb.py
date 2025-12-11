@@ -9,11 +9,12 @@ results as tabular data, and creates visualizations for further analysis.
 from __future__ import annotations
 
 import json
+import pickle
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterator, Tuple
+from typing import Dict, Iterator, Tuple, Optional
 
 import matplotlib
 
@@ -222,25 +223,65 @@ def save_summary(distributions: TagDistributions, output_path: Path) -> None:
     output_path.write_text(json.dumps(summary, indent=2))
 
 
+def save_distributions_cache(distributions: TagDistributions, cache_path: Path) -> None:
+    """Save the computed distributions to a cache file."""
+    print(f"Saving distributions cache to {cache_path}...")
+    with open(cache_path, 'wb') as f:
+        pickle.dump(distributions, f)
+    print(f"  Cache saved successfully ({cache_path.stat().st_size / (1024*1024):.2f} MB)")
+
+
+def load_distributions_cache(cache_path: Path) -> Optional[TagDistributions]:
+    """Load distributions from cache if available."""
+    if not cache_path.exists():
+        return None
+    
+    print(f"Loading distributions from cache: {cache_path}")
+    try:
+        with open(cache_path, 'rb') as f:
+            distributions = pickle.load(f)
+        print("  Cache loaded successfully!")
+        print(f"    - Negative documents: {distributions.document_totals.get('negative', 0):,}")
+        print(f"    - Positive documents: {distributions.document_totals.get('positive', 0):,}")
+        return distributions
+    except Exception as e:
+        print(f"  Warning: Failed to load cache ({e}), will recompute...")
+        return None
+
+
 def main() -> None:
     project_root = Path(__file__).resolve().parents[1]
     data_dir = project_root / "data"
     figures_dir = project_root / "figures"
     reports_dir = project_root / "reports"
+    cache_dir = project_root / ".cache"
 
-    for directory in (data_dir, figures_dir, reports_dir):
+    for directory in (data_dir, figures_dir, reports_dir, cache_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
-    print("Loading IMDB dataset (nocode-ai/imdb-movie-reviews)...")
-    dataset = load_dataset("nocode-ai/imdb-movie-reviews")
+    cache_path = cache_dir / "distributions_cache.pkl"
 
-    print("Loading spaCy model (en_core_web_sm)...")
-    nlp = ensure_spacy_model("en_core_web_sm")
+    # Try to load from cache first
+    distributions = load_distributions_cache(cache_path)
 
-    print("Computing POS and NER distributions...")
-    distributions = compute_distributions(dataset, nlp)
+    if distributions is None:
+        # Cache miss - need to compute from scratch
+        print("Loading IMDB dataset (nocode-ai/imdb-movie-reviews)...")
+        dataset = load_dataset("nocode-ai/imdb-movie-reviews")
 
-    print("Converting distributions to dataframes...")
+        print("Loading spaCy model (en_core_web_sm)...")
+        nlp = ensure_spacy_model("en_core_web_sm")
+
+        print("Computing POS and NER distributions...")
+        print("  (This will take ~20-25 minutes, but results will be cached)")
+        distributions = compute_distributions(dataset, nlp)
+
+        # Save to cache for next time
+        save_distributions_cache(distributions, cache_path)
+    else:
+        print("Using cached distributions (to recompute, delete .cache/distributions_cache.pkl)")
+
+    print("\nConverting distributions to dataframes...")
     pos_df = distributions_to_dataframe(distributions.pos_counts, distributions.token_totals, "pos_tag")
     ner_df = distributions_to_dataframe(distributions.ner_counts, distributions.entity_totals, "entity_label")
 
@@ -263,12 +304,16 @@ def main() -> None:
         title="Named Entity Distribution by Sentiment (IMDB Reviews)",
     )
 
+    print("\n" + "="*60)
     print("Analysis complete. Outputs saved to:")
+    print("="*60)
     print(f"  POS distribution: {data_dir / 'pos_tag_distribution.csv'}")
     print(f"  NER distribution: {data_dir / 'ner_label_distribution.csv'}")
     print(f"  Summary:          {data_dir / 'summary.json'}")
     print(f"  POS figure:       {figures_dir / 'pos_tag_distribution.png'}")
     print(f"  NER figure:       {figures_dir / 'ner_label_distribution.png'}")
+    print(f"  Cache:            {cache_path}")
+    print("="*60)
 
 
 if __name__ == "__main__":

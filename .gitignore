@@ -1,2 +1,6 @@
 # .gitignore
 *.json
+
+# Cache directories
+**/.cache/
+*.pkl

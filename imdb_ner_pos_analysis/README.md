@@ -22,6 +22,8 @@ The objective of this assignment is to:
 
 ```
 imdb_ner_pos_analysis/
+├── .cache/                         # Cached computation results (auto-generated)
+│   └── distributions_cache.pkl     # Cached NER/POS distributions (~3MB)
 ├── data/                           # Generated data files
 │   ├── pos_tag_distribution.csv    # POS tag frequency by sentiment
 │   ├── ner_label_distribution.csv  # NER entity frequency by sentiment
@@ -32,7 +34,7 @@ imdb_ner_pos_analysis/
 ├── reports/                        # Generated reports
 │   └── imdb_ner_pos_analysis_report.pdf  # Comprehensive analysis report
 ├── scripts/                        # Python implementation
-│   ├── process_imdb.py             # Main NER/POS processing pipeline
+│   ├── process_imdb.py             # Main NER/POS processing pipeline (with caching)
 │   ├── generate_report.py          # PDF report generation with tables
 │   ├── generate_visualizations.py  # Enhanced 4-panel dashboard generator
 │   └── verify_outputs.py           # Output validation script
@@ -71,11 +73,15 @@ python scripts/process_imdb.py
 This script will:
 - Download the IMDB dataset from Hugging Face
 - Load the spaCy English model
-- Process all 50,000 reviews with NER and POS tagging
+- Process all 50,000 reviews with NER and POS tagging (with intelligent caching)
 - Generate CSV files with tag distributions
 - Create visualization charts
 
-**Expected Runtime**: ~20-25 minutes (depending on system)
+**Expected Runtime**: 
+- First run: ~20-25 minutes (depending on system)
+- Subsequent runs: ~2-5 seconds (using cached results)
+
+**Caching**: The script automatically caches processed distributions in `.cache/distributions_cache.pkl`. To force reprocessing, simply delete this cache file.
 
 2. **Generate visualizations** (optional - already created by step 1):
 ```bash
@@ -112,7 +118,9 @@ This creates a comprehensive analysis report with tables and statistical insight
 
 ### Report
 
-- **`imdb_ner_pos_analysis_report.pdf`**: Comprehensive analysis report (~1,500 words) with 4 data tables summarizing:
+- **`imdb_ner_pos_analysis_report.pdf`**: Comprehensive analysis report (~1,500 words) including:
+  - 4 detailed data tables with statistics
+  - 2 embedded visualization figures (POS & NER distributions)
   - Methodology and data preparation
   - Distribution analysis findings
   - Key insights and patterns
